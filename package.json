@@ -1,0 +1,19 @@
+{
+  "name": "loader",
+  "version": "1.0.0",
+  "description": "goal: * be able to use node_modules/naked imports normally in code * have those automagically be where i need them when we load up",
+  "main": "build.js",
+  "dependencies": {
+    "chewie-pics": "^1.0.7",
+    "classnames": "^2.2.6"
+  },
+  "devDependencies": {
+    "@types/node": "^10.12.21"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
