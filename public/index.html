@@ -11,11 +11,136 @@
       http-equiv="X-UA-Compatible"
       content="ie=edge"
     >
-    <title>loader testing</title>
+    <title>
+      Module loader/bundler testing
+    </title>
+    <link
+      rel="stylesheet"
+      href="css/index.css"
+    />
+    <script>
+      const SOCKET_PORT = 3333;
+      const url = `ws://localhost:${SOCKET_PORT}`;
+      const webSocket = new WebSocket(url);
+
+      webSocket.onmessage = (eventSent) => {
+        const { shouldReload } = JSON.parse(eventSent.data);
+
+        if (shouldReload) {
+          location.reload();
+        }
+      };
+
+      document.addEventListener('beforeunload', () => {
+        webSocket.close();
+      });
+    </script>
   </head>
 
   <body>
-    testing, testing, 123
+
+    <header>
+      <h1>Module Loader Testing</h1>
+    </header>
+
+    <main>
+
+      <section>
+        <figure></figure>
+        <button id="chewie_button">Another, please!</button>
+      </section>
+
+      <section>
+        <h2>
+          Notes
+        </h2>
+        <p>
+          A big thank you to:
+          <ul>
+            <li>
+              Chewie, the very helpful pupster in these pictures. If you'd like,
+              you can see more of Chewie in his <a href="https://github.com/robertjlooby/chewie-pics">native GitHub
+                repository habitat</a>, graciously maintained by <a href="https://github.com/robertjlooby">@robertjlooby</a>
+            </li>
+            <li>
+              <a href="http://twitter.com/trptcoling">@trptcolin</a> for suggesting the <em>chewie-pics</em>
+              repository!
+            </li>
+          </ul>
+        </p>
+      </section>
+    </main>
   </body>
+
+  <script>
+    function getPackageName() {
+      if (document.currentScript && document.currentScript.src) {
+        return document.currentScript.src.replace(/^.+\/(.+)\/.+\.?.+$/g, '$1');
+      } else {
+        throw new Error('Trying to access module outside of document context');
+      }
+    }
+
+    try {
+      console.assert(module.exports);
+    } catch (error) {
+      const registry = {};
+      const addToRegistry = (propertyValue) => {
+        const packageName = getPackageName();
+        if (packageName in registry) {
+          registry[packageName] = {
+            ...registry[packageName],
+            ...propertyValue
+          }
+        } else {
+          registry[packageName] = propertyValue;
+        }
+      };
+
+      var exports = new Proxy({}, {
+        set: function (target, propertyName, propertyValue) {
+          addToRegistry({ [propertyName]: propertyValue });
+          return true;
+        }
+      });
+
+      var module = {
+        exports: exports
+      };
+
+      window.module = new Proxy(module, {
+        set: function (target, propertyName, propertyValue) {
+          if (propertyName === 'exports') {
+            addToRegistry(propertyValue);
+            return true;
+          }
+
+          // Nothing shooooould be accessing 'module' ...
+          console.error(`Unexpected set for key: ${propertyName}`);
+          console.error(`Value: %o`, propertyValue);
+          throw new Error();
+        }
+      });
+
+      window.require = function (filePath) {
+        if (filePath in registry) {
+          return registry[filePath];
+        }
+      }
+    }
+  </script>
+  <script
+    defer="defer"
+    src="./vendor/chewie-pics/index.js"
+  ></script>
+  <script
+    defer="defer"
+    src="./vendor/classnames/index.js"
+  ></script>
+  <script
+    defer="defer"
+    type="module"
+    src="./src/index.js"
+  ></script>
 
 </html>

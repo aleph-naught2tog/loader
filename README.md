@@ -4,7 +4,7 @@ goal:
 * be able to use node_modules/naked imports normally in code
 * have those automagically be where i need them when we load up
 
-need to be able to bootstrap
+need to be able to bootstrap...
 
 ## attempt 1
 
