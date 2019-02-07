@@ -2,16 +2,40 @@ const fs = require('fs');
 const path = require('path');
 
 const fileUtils = require('./file_utils');
+const { cwdTo } = fileUtils;
 
 const MAIN_LOOKUP = {};
 const ASSET_LOOKUP = {};
 
 exports.getAllDependencyData = getAllDependencyData;
-function getAllDependencyData(nodeModules) {
-  const { dependencies } = parsePackageJson('', false);
-
+function getAllDependencyData(projectRoot) {
+  process.chdir(projectRoot);
+  ensureNodeModules();
+  const { dependencies } = getRootDependencies();
+  const nodeModulesPath = cwdTo('node_modules');
   for (const dependencyName in dependencies) {
-    processDependency(nodeModules, dependencyName);
+    processDependency(nodeModulesPath, dependencyName);
+  }
+}
+
+function getRootDependencies() {
+  return JSON.parse(
+    fs.readFileSync(cwdTo('package.json'), {
+      encoding: 'utf8'
+    })
+  );
+}
+
+function ensureNodeModules() {
+  try {
+    fs.readdirSync(cwdTo('node_modules'));
+  } catch (error) {
+    console.error(error);
+    if (error.code === 'ENOENT') {
+      require('child_process').spawnSync('npm', ['install']);
+    } else {
+      throw error;
+    }
   }
 }
 
@@ -74,10 +98,8 @@ function processDependency(nodeModules, dependencyName) {
   }
 }
 
-function parsePackageJson(moduleName = '', nodeModule = true) {
-  const contextPath = nodeModule
-    ? path.join(process.cwd(), 'node_modules')
-    : '';
+function parsePackageJson(moduleName) {
+  const contextPath = path.join(process.cwd(), 'node_modules');
   const folderPath = path.join(contextPath, moduleName);
   const packageJsonPath = path.join(folderPath, 'package.json');
   return JSON.parse(fileUtils.readFile(packageJsonPath));

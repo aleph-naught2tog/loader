@@ -1,6 +1,11 @@
 const path = require('path');
 const fs = require('fs');
 
+exports.cwdTo = cwdTo;
+function cwdTo(somePath) {
+  return path.join(process.cwd(), somePath);
+}
+
 const grabDependencies = folder => {
   const packageJsonPath = path.join(folder, 'package.json');
   const { dependencies } = JSON.parse(
