@@ -1,15 +1,21 @@
 # loader
 
+**NB: this is a _mega_ work-in-progress.**
+
 goal:
 
-- be able to use node_modules/naked imports normally in code
-- have those automagically be where i need them when we load up
+- learn stuff
+- be able to use node_modules/naked imports normally in the source code
+- have dependencies included automagically, with as little-to-minimal configuration as possible (for educational/simplicity sake)
+-
+## getting started
 
-need to be able to bootstrap...
+* the `mrs-tiny-server` referenced is the home-grown dev-server, which currently resides [here](https://github.com/aleph-naught2tog/tiny-server). (Also a WIP and currently locally included via the filesystem, etc.)
 
-## next
+## todo
 
-- [ ] figure out testing
+- [ ] better tests
+- [ ] actually 'linking' the dependencies
 
 ## sketch
 
