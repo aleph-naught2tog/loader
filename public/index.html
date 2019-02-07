@@ -60,10 +60,11 @@
             <li>
               Chewie, the very helpful pupster in these pictures. If you'd like,
               you can see more of Chewie in his <a href="https://github.com/robertjlooby/chewie-pics">native GitHub
-                repository habitat</a>, graciously maintained by <a href="https://github.com/robertjlooby">@robertjlooby</a>
+                repository habitat</a>, graciously maintained by <a
+                href="https://github.com/robertjlooby">@robertjlooby</a>
             </li>
             <li>
-              <a href="http://twitter.com/trptcoling">@trptcolin</a> for suggesting the <em>chewie-pics</em>
+              <a href="http://twitter.com/trptcolin">@trptcolin</a> for suggesting the <em>chewie-pics</em>
               repository!
             </li>
           </ul>
@@ -73,11 +74,17 @@
   </body>
 
   <script>
+    /*
+      TODO: this should get pulled out properly; not sure how document script
+      accessing will function outside of a literal document, however.
+
+      then again, `document.getElementById` does just fine.
+    */
     function getPackageName() {
       if (document.currentScript && document.currentScript.src) {
         return document.currentScript.src.replace(/^.+\/(.+)\/.+\.?.+$/g, '$1');
       } else {
-        throw new Error('Trying to access module outside of document context');
+        console.warn('Trying to access module outside of document context');
       }
     }
 
@@ -97,8 +104,15 @@
         }
       };
 
+      // TODO: do I reeeeeeally need to `var` here?
+      // I _want_ it in the global scope, but I'm setting it on `window` anyways
       var exports = new Proxy({}, {
         set: function (target, propertyName, propertyValue) {
+          console.log('reg', registry)
+          console.log('set', propertyName, propertyValue)
+          // Sending the values in as an object here allows keeping a uniform
+          // interface, as well as enabling a module.exports syntax of
+          //    `module.exports.someProperty = exportedValueOfThatProperty`
           addToRegistry({ [propertyName]: propertyValue });
           return true;
         }
@@ -107,7 +121,7 @@
       var module = {
         exports: exports
       };
-
+      window.exports = exports;
       window.module = new Proxy(module, {
         set: function (target, propertyName, propertyValue) {
           if (propertyName === 'exports') {
@@ -115,7 +129,7 @@
             return true;
           }
 
-          // Nothing shooooould be accessing 'module' ...
+          // Nothing shooooould be accessing 'module' ...?
           console.error(`Unexpected set for key: ${propertyName}`);
           console.error(`Value: %o`, propertyValue);
           throw new Error();
@@ -125,10 +139,37 @@
       window.require = function (filePath) {
         if (filePath in registry) {
           return registry[filePath];
+        } else {
+          console.log(registry)
+          console.warn(`require('${filePath}') failed.`);
         }
       }
     }
   </script>
+  <!--
+    TODO: currently we are hard-coding these in.
+
+    We shoooooooooooooould be able to either add this onto the file (eh) or
+    perhaps more tranparently create an `autoload` file, which we write ahead of
+    time on build via the build file, that we then load here- in which we create
+    these elements dynamically after setting up the require code above, maybe?
+
+    The biggest thing I think is to make sure all required files are rewritten
+    and somehow loaded/pulled into scope *before* we have the canonical `main`
+    script include as our Entry Point Into The Application
+  -->
+  <script
+    defer="defer"
+    src="./vendor/extend/index"
+  ></script>
+  <script
+    defer="defer"
+    src="./vendor/request/lib/helpers.js"
+  ></script>
+  <script
+    defer="defer"
+    src="./vendor/request/index.js"
+  ></script>
   <script
     defer="defer"
     src="./vendor/chewie-pics/index.js"
@@ -137,6 +178,8 @@
     defer="defer"
     src="./vendor/classnames/index.js"
   ></script>
+
+  <!-- this should be package.main (package.browser, actually?) -->
   <script
     defer="defer"
     type="module"

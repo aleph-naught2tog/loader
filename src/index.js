@@ -1,7 +1,17 @@
-import cx from 'classnames';
 import chewie from 'chewie-pics';
 
-import * as _something from './test';
+import * as _something from './blorp';
+
+import request from 'request';
+
+console.log(request);
+
+
+
+request
+  .get('https://jsonplaceholder.typicode.com/todos/1')
+  .on('response', console.log);
+
 
 const toChewieAssetFolder = filename => {
   return {

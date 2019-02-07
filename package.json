@@ -5,14 +5,17 @@
   "main": "src/index.js",
   "dependencies": {
     "chewie-pics": "^1.0.7",
-    "classnames": "^2.2.6"
+    "classnames": "^2.2.6",
+    "request": "^2.88.0"
   },
   "devDependencies": {
     "@types/node": "^10.12.21",
+    "jest": "^24.1.0",
     "mrs-tiny-server": "file:../mrs-tiny-server"
   },
   "scripts": {
-    "start": "mrs-tiny-server"
+    "start": "mrs-tiny-server",
+    "test": "jest --verbose --watch"
   },
   "keywords": [],
   "author": "",
