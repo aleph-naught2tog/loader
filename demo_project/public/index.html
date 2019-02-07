@@ -73,6 +73,7 @@
     </main>
   </body>
 
+  <script src="/vendor/bootstrap.require.js"></script>
   <script>
     /*
       TODO: this should get pulled out properly; not sure how document script
@@ -88,10 +89,12 @@
       }
     }
 
+    const registry = window.registry;
+    console.log('html', registry)
+
     try {
       console.assert(module.exports);
     } catch (error) {
-      const registry = {};
       const addToRegistry = (propertyValue) => {
         const packageName = getPackageName();
         if (packageName in registry) {
@@ -108,8 +111,6 @@
       // I _want_ it in the global scope, but I'm setting it on `window` anyways
       var exports = new Proxy({}, {
         set: function (target, propertyName, propertyValue) {
-          console.log('reg', registry)
-          console.log('set', propertyName, propertyValue)
           // Sending the values in as an object here allows keeping a uniform
           // interface, as well as enabling a module.exports syntax of
           //    `module.exports.someProperty = exportedValueOfThatProperty`
@@ -137,12 +138,24 @@
       });
 
       window.require = function (filePath) {
+        console.log(filePath)
         if (filePath in registry) {
           return registry[filePath];
         } else {
           console.log(registry)
           console.warn(`require('${filePath}') failed.`);
         }
+      }
+
+      for (const key in registry) {
+        fetch(`/vendor/${key}/index.js`).then(async res => {
+          const text = await res.text();
+          try {
+            eval(text);
+          } catch (error) {
+            console.log(key, error)
+          }
+        });
       }
     }
   </script>
@@ -158,7 +171,7 @@
     and somehow loaded/pulled into scope *before* we have the canonical `main`
     script include as our Entry Point Into The Application
   -->
-  <script
+  <!-- <script
     defer="defer"
     src="./vendor/extend/index"
   ></script>
@@ -177,7 +190,7 @@
   <script
     defer="defer"
     src="./vendor/classnames/index.js"
-  ></script>
+  ></script> -->
 
   <!-- this should be package.main (package.browser, actually?) -->
   <script

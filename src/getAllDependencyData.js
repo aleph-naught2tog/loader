@@ -30,10 +30,10 @@ function ensureNodeModules() {
   try {
     fs.readdirSync(cwdTo('node_modules'));
   } catch (error) {
-    console.error(error);
     if (error.code === 'ENOENT') {
       require('child_process').spawnSync('npm', ['install']);
     } else {
+      console.error(error);
       throw error;
     }
   }
@@ -134,6 +134,13 @@ function copyAllAssetsToVendorFolder(vendorFolder) {
 
     copyOverAssets(assetFolder, assetFileList);
   }
+
+  const d = ['window.registry = { '];
+  for (const dep in MAIN_LOOKUP) {
+    d.push(`"${dep}": {},`);
+  }
+  d.push("};");
+  fs.writeFileSync(path.join(vendorFolder, 'bootstrap.require.js'), d.join(''));
 }
 
 function copyOverAssets(assetFolder, assetFileList) {

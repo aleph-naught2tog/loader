@@ -4,12 +4,11 @@
   "description": "goal: * be able to use node_modules/naked imports normally in code * have those automagically be where i need them when we load up",
   "devDependencies": {
     "@types/node": "^10.12.21",
-    "jest": "^24.1.0",
-    "mrs-tiny-server": "file:../mrs-tiny-server"
+    "jest": "^24.1.0"
   },
   "scripts": {
-    "start": "mrs-tiny-server",
-    "test": "jest --verbose --watch"
+    "test": "jest --verbose --watch",
+    "start:project": "rm -rf ./demo_project/build ./demo_project/node_modules && node build"
   },
   "keywords": [],
   "author": "",

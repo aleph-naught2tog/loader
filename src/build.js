@@ -1,6 +1,6 @@
-// this is the root of the *project being built*
 const path = require('path');
 
+// this is the root of the *project being built*
 const PROJECT_ROOT = path.join(process.cwd(), 'demo_project');
 
 const {
@@ -22,11 +22,6 @@ const VENDOR_FOLDER = path.join(BUILD_FOLDER, 'vendor');
 const fs = require('fs');
 fileUtils.makeFolderIfNotExists(BUILD_FOLDER, fs);
 fileUtils.makeFolderIfNotExists(VENDOR_FOLDER, fs);
-
-/*
-  TODO:
-    if there is no node_modules, run `npm install`
-*/
 
 getAllDependencyData(PROJECT_ROOT);
 fileUtils.copyOverFiles(SOURCE_FOLDER, BUILD_SOURCE_FOLDER, processData);

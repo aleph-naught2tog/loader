@@ -1,8 +1,16 @@
 # loader
 
-* todo NEXT -- fix the dev server shtuff (probs the server should just CD in)
-
 **NB: this is a _mega_ work-in-progress.**
+
+## todo
+
+- [ ] better tests
+  - [ ] set up some fixtures etc
+- [ ] actually 'linking' the dependencies
+- [ ] config file (prefer real JS to json)
+- [ ] get typescript to dead tree shake I guess
+
+## about
 
 goal:
 
@@ -10,16 +18,11 @@ goal:
 - be able to use node_modules/naked imports normally in the source code
 - have dependencies included automagically, with as little-to-minimal configuration as possible (for educational/simplicity sake)
 -
-## getting started
+### getting started
 
 * the `mrs-tiny-server` referenced is the home-grown dev-server, which currently resides [here](https://github.com/aleph-naught2tog/tiny-server). (Also a WIP and currently locally included via the filesystem, etc.)
 
-## todo
-
-- [ ] better tests
-- [ ] actually 'linking' the dependencies
-
-## sketch
+### sketch
 
 1. get dependency information
    1. read package.json
@@ -30,7 +33,7 @@ goal:
 3. move source files to build folder
 4. rewrite source file imports IN THE BUILD folder
 
-### notes
+## notes
 
 * these are both sloooooooow ... and I believe equivalent to what I'm doing?
   * `npm ls --prod --json`: json tree of dependencies in prod env
