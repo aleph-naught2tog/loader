@@ -1,0 +1,20 @@
+{
+  "name": "demo_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "dependencies": {
+    "chewie-pics": "^1.0.7",
+    "classnames": "^2.2.6",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "mrs-tiny-server": "file:../node_modules/mrs-tiny-server"
+  },
+  "scripts": {
+    "start": "mrs-tiny-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -2,12 +2,6 @@
   "name": "loader",
   "version": "1.0.0",
   "description": "goal: * be able to use node_modules/naked imports normally in code * have those automagically be where i need them when we load up",
-  "main": "src/index.js",
-  "dependencies": {
-    "chewie-pics": "^1.0.7",
-    "classnames": "^2.2.6",
-    "request": "^2.88.0"
-  },
   "devDependencies": {
     "@types/node": "^10.12.21",
     "jest": "^24.1.0",

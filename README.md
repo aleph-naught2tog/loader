@@ -1,5 +1,7 @@
 # loader
 
+* todo NEXT -- fix the dev server shtuff (probs the server should just CD in)
+
 **NB: this is a _mega_ work-in-progress.**
 
 goal:

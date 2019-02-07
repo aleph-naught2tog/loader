@@ -1,4 +1,7 @@
+// this is the root of the *project being built*
 const path = require('path');
+
+const PROJECT_ROOT = path.join(process.cwd(), 'demo_project');
 
 const {
   getAllDependencyData,
@@ -9,12 +12,9 @@ const {
 
 const fileUtils = require('./file_utils');
 
-const CWD = process.cwd();
-
-const PUBLIC_FOLDER = path.join(CWD, 'public');
-const SOURCE_FOLDER = path.join(CWD, 'src');
-const NODE_MODULES = path.join(CWD, 'node_modules');
-const BUILD_FOLDER = path.join(CWD, 'build');
+const PUBLIC_FOLDER = path.join(PROJECT_ROOT, 'public');
+const SOURCE_FOLDER = path.join(PROJECT_ROOT, 'src');
+const BUILD_FOLDER = path.join(PROJECT_ROOT, 'build');
 
 const BUILD_SOURCE_FOLDER = path.join(BUILD_FOLDER, 'src');
 const VENDOR_FOLDER = path.join(BUILD_FOLDER, 'vendor');
@@ -23,7 +23,12 @@ const fs = require('fs');
 fileUtils.makeFolderIfNotExists(BUILD_FOLDER, fs);
 fileUtils.makeFolderIfNotExists(VENDOR_FOLDER, fs);
 
-getAllDependencyData(NODE_MODULES);
+/*
+  TODO:
+    if there is no node_modules, run `npm install`
+*/
+
+getAllDependencyData(PROJECT_ROOT);
 fileUtils.copyOverFiles(SOURCE_FOLDER, BUILD_SOURCE_FOLDER, processData);
 fileUtils.copyOverFiles(PUBLIC_FOLDER, BUILD_FOLDER);
 copyAllDependenciesToVendorFolder(VENDOR_FOLDER);
