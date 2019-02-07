@@ -138,24 +138,11 @@
       });
 
       window.require = function (filePath) {
-        console.log(filePath)
         if (filePath in registry) {
           return registry[filePath];
         } else {
-          console.log(registry)
           console.warn(`require('${filePath}') failed.`);
         }
-      }
-
-      for (const key in registry) {
-        fetch(`/vendor/${key}/index.js`).then(async res => {
-          const text = await res.text();
-          try {
-            eval(text);
-          } catch (error) {
-            console.log(key, error)
-          }
-        });
       }
     }
   </script>

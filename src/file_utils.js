@@ -22,20 +22,25 @@ const grabDependencies = folder => {
 };
 
 exports.walkFileTree = buildDependencyTree;
-function buildDependencyTree(startingFolder = '.', dependencyTree = {}) {
+function *buildDependencyTree(startingFolder = '.', dependencyTree = {}) {
   const cwd = process.cwd();
   const nodeModulesPath = path.join(cwd, 'node_modules');
 
+  // console.group(path.basename(startingFolder));
   const dependencies = grabDependencies(startingFolder);
+  // console.log(dependencies);
 
   for (const dependencyName of dependencies) {
     const newRoot = {}; // root note for this dep
     const dependencyFolder = path.join(nodeModulesPath, dependencyName);
-    buildDependencyTree(dependencyFolder, newRoot);
+    yield *buildDependencyTree(dependencyFolder, newRoot);
     dependencyTree[dependencyName] = newRoot;
   }
 
-  return dependencyTree;
+  // console.groupEnd();
+
+  // return dependencyTree;
+  yield dependencyTree;
 }
 
 exports.copyOverFiles = copyOverFiles;
