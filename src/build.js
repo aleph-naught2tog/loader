@@ -7,7 +7,8 @@ const PROJECT_ROOT = path.join(process.cwd(), 'demo_project');
 const tree = require('./tree');
 
 process.chdir(PROJECT_ROOT);
-function processPackageLock(where) {
+
+function processPackageLock() {
   const fs = require('fs');
   const lockJson = JSON.parse(fs.readFileSync('package-lock.json'));
   const result = tree.unrollDepthFirst(lockJson, {
@@ -20,13 +21,11 @@ function processPackageLock(where) {
     fail: [item => item.dev || item.optional]
   });
 
-  const filtered = result
-    .filter(str => str !== 'requires')
-    .filter(str => str !== 'dependencies');
-
-  console.log(result.length, filtered, filtered.length);
+  return result;
 }
-processPackageLock('.');
+
+const processedLockFile = processPackageLock();
+console.log(processedLockFile);
 
 // const fs = require('fs');
 //   const lockJson = JSON.parse(fs.readFileSync('package-lock.json'));

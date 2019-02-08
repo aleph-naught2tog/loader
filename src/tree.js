@@ -1,37 +1,45 @@
 /*
-
   Fair warning: this is a *very* destructive means of processing an object, as
   in, "we slowly permanently dereference things off it via `delete` and then add
   it to a stack which we then keep popping while passing the original object
   around as a trace"
 
-  (Its eventual destination is processing very-nested-and-numerous-dependency
-  structures, which are codified in a file that is parsed, so.)
+  'reject' is an object, because it's faster to search for a specific value by
+  checking keys than to search an array in the worst case
+
+  The label on the while loop helps us control the iteration more completely;
+  it's only really necessary on the nested `for` loop where we want to jump
+  all-the-way-out, but using the label consistently makes it more clear what's
+  happening.
+
+  TODO: this should deduplicate as we go?
+  TODO: we are currently adding 'requires' and 'dependencies' a million times
+        which we can certainly filter out at the end but ehhhhh?
 */
 exports.unrollDepthFirst = unrollDepthFirst;
-function unrollDepthFirst(dict, { keep = [], reject = {}, fail = [] }) {
-  const stack = [];
-
-  stack[0] = dict;
+function unrollDepthFirst(dict, { reject = {}, fail = [] }) {
   const resultStack = [];
-  let stackCounter = 0;
 
-  loop: while (stack.length) {
-    stackCounter += 1;
+  // Initialize our stack by adding the object itself
+  const stack = [dict];
 
-    console.log(stackCounter);
+  outermost_while_loop: while (stack.length) {
     // 0 is falsy -- meaning, if we have gotten in here, there is at LEAST on
     //    object on the stack; as a result, we can safely pop and know that we
     //    receive *something*
     const currentTree = stack.pop();
 
     if (typeof currentTree !== 'object') {
-      continue;
+      continue outermost_while_loop; // <-- label
     }
 
-    for (const failureCondition of fail) {
-      if (failureCondition(currentTree)) {
-        continue loop;
+    for (const shouldFail of fail) {
+      if (shouldFail(currentTree)) {
+        // using a label here allows us to jump to the next iteration of our
+        //    outermost (while) loop; otherwise, we would keep checking failure
+        //    conditions or if we `break`, we would end up still adding the
+        //    failing tree
+        continue outermost_while_loop; // <-- label
       }
     }
 
@@ -49,7 +57,7 @@ function unrollDepthFirst(dict, { keep = [], reject = {}, fail = [] }) {
     //    has a rightSibling at all to visit.)
     const [leftChildKey, restObjectExists] = Object.keys(currentTree);
     if (leftChildKey in reject) {
-      continue loop;
+      continue outermost_while_loop; // <- label
     }
 
     // Since the tree is an object, however, we can't just pop things off and
@@ -74,8 +82,15 @@ function unrollDepthFirst(dict, { keep = [], reject = {}, fail = [] }) {
     //    as the measure of whether or not the rest of the tree is worth
     //    investigating
     if (restObjectExists) {
-      // Remove unnecessary branches
+      // Remove unnecessary branches by removing the references under the keys
+      //    we want to ignore; by doing so here, we can prevent adding them to
+      //    the stack at all
       for (const key in reject) {
+        // TODO: so, um, if I *remove* this `for` loop, but leave in the
+        //    condition to continue on (above) without adding when a 'reject'
+        //    key is found, we ... lose the whole tree I guess. which is not
+        //    great? or might not b a problem but not happy that I don't
+        //    understant *why* that happens
         delete leftChild[key];
         delete currentTree[key];
       }
@@ -95,7 +110,7 @@ function unrollDepthFirst(dict, { keep = [], reject = {}, fail = [] }) {
       //    meaning it will 'load' first.
       // if we were a generator, we'd `yield` the key here to emit it
       resultStack.unshift(leftChildKey);
-      continue;
+      continue outermost_while_loop; // <-- label
     }
 
     // This last condition is the case of our very last key on an object
