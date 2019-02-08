@@ -1,20 +1,24 @@
 /*
-  Fair warning: this is a *very* destructive means of processing an object, as
-  in, "we slowly permanently dereference things off it via `delete` and then add
-  it to a stack which we then keep popping while passing the original object
-  around as a trace"
+  ❗️❗️❗️Fair warning: ❗️❗️❗️
 
-  'reject' is an object, because it's faster to search for a specific value by
+  This is a *very* destructive means of processing an object, as in, "we slowly
+  permanently dereference things off it via `delete` and then add it to a stack
+  which we then keep popping while passing the original object around as a
+  trace"
+
+  * 'reject' is an object, because it's faster to search for a specific value by
   checking keys than to search an array in the worst case
 
-  The label on the while loop helps us control the iteration more completely;
+  * The label on the while loop helps us control the iteration more completely;
   it's only really necessary on the nested `for` loop where we want to jump
   all-the-way-out, but using the label consistently makes it more clear what's
   happening.
 
-  TODO: this should deduplicate as we go?
+  TODO: this should deduplicate as we go? (I have an Idea about how to do so
+  rapidly and while preserving order I am just not confident yet...)
+
   TODO: we are currently adding 'requires' and 'dependencies' a million times
-        which we can certainly filter out at the end but ehhhhh?
+  which we can certainly filter out at the end but ehhhhh?
 */
 exports.unrollDepthFirst = unrollDepthFirst;
 function unrollDepthFirst(dict, { reject = {}, fail = [] }) {
