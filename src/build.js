@@ -14,7 +14,6 @@ function processPackageLock() {
   const result = tree.unrollDepthFirst(lockJson, {
     reject: {
       integrity: true,
-      version: true,
       resolved: true,
       bundled: true
     },
