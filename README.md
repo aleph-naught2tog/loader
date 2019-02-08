@@ -65,49 +65,6 @@ goal:
 * instead of semvers, say we map "recipe-name": "recipe-version"
 * and for kicks a fake key of, idk, people invited
 * `dependencies`:
-  * eg:
-      ```json
-      // ...
-      {
-        "name": "holidays",
-        "requires": true,
-        "dependencies": {
-          "kids-table": {
-            // ... version, integrity, resolved
-            "requires": {
-              "pumpkin-pie": "moms-recipe",
-              "potatoes": "baked",
-              "party-hats": "festive"
-            }
-            /*
-              The lack of kids-table.dependencies means that each of these
-              required packages exists in the level above us (e.g.,
-              top-module.dependencies)
-            */
-          },
-          "big-kids-table": {
-            "dependencies": {
-              "potatoes": {
-                // 'potatoes' is a dependency here because what we need
-                //    is THIS kind of potato -- which does NOT match the top level
-                "version": "mashed"
-              }
-            }
-          },
-          "party-hats": {
-            "version": "festive"
-          },
-          "pumpkin-pie": {
-            "version": "brothers-recipe"
-          },
-          "potatoes": {
-            "version": "baked"
-            // ... integrity, resolved
-          }
-        }
-      }
-      ```
-  * from above -- `thanksgiving-dinner` is the dependency name
   * `version`
   * `integrity`
   * `resolved`
