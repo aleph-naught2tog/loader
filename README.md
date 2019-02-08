@@ -38,3 +38,81 @@ goal:
 * these are both sloooooooow ... and I believe equivalent to what I'm doing?
   * `npm ls --prod --json`: json tree of dependencies in prod env
   * `npm ls --prod --parseable`: deduped set of dependencies as paths to their folders
+
+## package-lock
+
+* a `requires` is a `"module-name": "0.1.2"` (some semver) pair
+* a `dependencies` is a whole nother tree, which may itself have `requires`, etc etc
+* kinds of `requires`/`dependencies` relationships:
+  * 0 `requires`,   0 `dependencies`
+    * => no dependencies
+  * 0 `requires`,   1+ `dependencies`
+    * => ??? what the heck? this *DOES* happen
+  * 1+ `requires`,  0 `dependencies`
+    * => `dependencies` are already somewhere above us in the tree with the version that we want
+  * 1+ `requires`,  1+ `dependencies`
+    * => `requires` that are not also in the dependencies of this object
+      * => these `requires` are listd somewhere higher in the tree w/ right version
+    * => `dependencies`
+      * => these are a version that DIFFERS from what is needed above -- so we
+        are including it here as a dependency because it is more specific and
+        local to this dependency tree
+      * e.g., the top module needs `fast-parser v12.0.1` but *this* module
+        requires `fast-parser v2.0.4` -- 12.0.1 should exist elsewhere up higher
+        probs at the top level, but since we need a DIFFERENT version, it becomes
+        a dependency of *this* subtree
+* top level module = the actual project
+* instead of semvers, say we map "recipe-name": "recipe-version"
+* and for kicks a fake key of, idk, people invited
+* `dependencies`:
+  * eg:
+      ```json
+      // ...
+      {
+        "name": "holidays",
+        "requires": true,
+        "dependencies": {
+          "kids-table": {
+            // ... version, integrity, resolved
+            "requires": {
+              "pumpkin-pie": "moms-recipe",
+              "potatoes": "baked",
+              "party-hats": "festive"
+            }
+            /*
+              The lack of kids-table.dependencies means that each of these
+              required packages exists in the level above us (e.g.,
+              top-module.dependencies)
+            */
+          },
+          "big-kids-table": {
+            "dependencies": {
+              "potatoes": {
+                // 'potatoes' is a dependency here because what we need
+                //    is THIS kind of potato -- which does NOT match the top level
+                "version": "mashed"
+              }
+            }
+          },
+          "party-hats": {
+            "version": "festive"
+          },
+          "pumpkin-pie": {
+            "version": "brothers-recipe"
+          },
+          "potatoes": {
+            "version": "baked"
+            // ... integrity, resolved
+          }
+        }
+      }
+      ```
+  * from above -- `thanksgiving-dinner` is the dependency name
+  * `version`
+  * `integrity`
+  * `resolved`
+  * `optional` -> should still be included apparently
+  * `requires`:
+    * "hey, I require these things to function"
+    * mapping of `"module-name": "0.0.0semver`
+    * version should match either in our `dependencies` (this object), or in one *higher*

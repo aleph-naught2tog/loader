@@ -19,21 +19,23 @@ function processPackageLock(where) {
     },
     fail: [item => item.dev || item.optional]
   });
-  const filtered = result.filter(str => str !== 'requires').filter(str => str !== 'dependencies');
-  console.log(result.length, filtered, filtered.length);
 
-  // const ordred = [...Object.entries(result)];
-  // ordred.sort(([v, x], [u, y]) => y - x);
-  // console.log(ordred);
+  const filtered = result
+    .filter(str => str !== 'requires')
+    .filter(str => str !== 'dependencies');
+
+  console.log(result.length, filtered, filtered.length);
 }
 processPackageLock('.');
 
+// const fs = require('fs');
+//   const lockJson = JSON.parse(fs.readFileSync('package-lock.json'));
 // console.log(lockJson)
 // const root = {};
 // for (const f of fileUtils.walkFileTree('.', root)) {
 //   // console.log(f);
 // }
-// console.log(root);
+// console.log(require('util').inspect(root, true, Infinity, true));
 
 // const {
 //   getAllDependencyData,

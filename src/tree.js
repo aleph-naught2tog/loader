@@ -88,19 +88,13 @@ function unrollDepthFirst(dict, { keep = [], reject = {}, fail = [] }) {
       // Similarly, since 'moreObjectToCheck' was the key AFTER, we *know*
       //    that leftChild exists; therefore, we can skip the branch below
       //    and add it here for certain, `continue`ing to progress early
-
       typeof leftChild === 'object' && (stack[stack.length] = leftChild);
 
       // Finally, we add that key -- leftChildKey -- to the *start* of our
       //    resultStack, which ensures it is placed *before* its parents
       //    meaning it will 'load' first.
       // if we were a generator, we'd `yield` the key here to emit it
-      if (leftChildKey in reject) {
-
-      } else {
-
-        resultStack.unshift(leftChildKey);
-      }
+      resultStack.unshift(leftChildKey);
       continue;
     }
 
@@ -112,13 +106,7 @@ function unrollDepthFirst(dict, { keep = [], reject = {}, fail = [] }) {
       stack[stack.length] = leftChild;
 
       // And as above in the other branch, we go ahead and add that key
-      if (leftChildKey in reject) {
-
-      } else {
-
-        resultStack.unshift(leftChildKey);
-      }
-      // resultStack.unshift(leftChildKey);
+      resultStack.unshift(leftChildKey);
     }
   }
 
