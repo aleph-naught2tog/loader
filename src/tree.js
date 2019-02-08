@@ -9,13 +9,10 @@
   structures, which are codified in a file that is parsed, so.)
 */
 exports.unrollDepthFirst = unrollDepthFirst;
-function unrollDepthFirst(
-  dict,
-  { keep = [], reject = [], fail = [] }
-) {
+function unrollDepthFirst(dict, { keep = [], reject = {}, fail = [] }) {
   const stack = [];
 
-  stack.push(dict);
+  stack[0] = dict;
   const resultStack = [];
   let stackCounter = 0;
 
@@ -51,6 +48,9 @@ function unrollDepthFirst(
     //    grabbing some indicator as to whether the leftChild of our currentTree
     //    has a rightSibling at all to visit.)
     const [leftChildKey, restObjectExists] = Object.keys(currentTree);
+    if (leftChildKey in reject) {
+      continue loop;
+    }
 
     // Since the tree is an object, however, we can't just pop things off and
     //    mutate it in place. As a result, we need to truly *delete* that key
@@ -75,8 +75,7 @@ function unrollDepthFirst(
     //    investigating
     if (restObjectExists) {
       // Remove unnecessary branches
-      for (let index = 0; index < reject.length; index += 1) {
-        const key = reject[index];
+      for (const key in reject) {
         delete leftChild[key];
         delete currentTree[key];
       }
@@ -90,13 +89,18 @@ function unrollDepthFirst(
       //    that leftChild exists; therefore, we can skip the branch below
       //    and add it here for certain, `continue`ing to progress early
 
-      typeof leftChild === 'object' && stack.push(leftChild);
+      typeof leftChild === 'object' && (stack[stack.length] = leftChild);
 
       // Finally, we add that key -- leftChildKey -- to the *start* of our
       //    resultStack, which ensures it is placed *before* its parents
       //    meaning it will 'load' first.
       // if we were a generator, we'd `yield` the key here to emit it
-      resultStack.unshift(leftChildKey);
+      if (leftChildKey in reject) {
+
+      } else {
+
+        resultStack.unshift(leftChildKey);
+      }
       continue;
     }
 
@@ -105,10 +109,16 @@ function unrollDepthFirst(
     //    I'm not sure what. They're like the... extrema? or something
     if (leftChild) {
       // No need to add the rest of the tree -- we know it's finished
-      stack.push(leftChild);
+      stack[stack.length] = leftChild;
 
       // And as above in the other branch, we go ahead and add that key
-      resultStack.unshift(leftChildKey);
+      if (leftChildKey in reject) {
+
+      } else {
+
+        resultStack.unshift(leftChildKey);
+      }
+      // resultStack.unshift(leftChildKey);
     }
   }
 

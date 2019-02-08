@@ -7,20 +7,27 @@ const PROJECT_ROOT = path.join(process.cwd(), 'demo_project');
 const tree = require('./tree');
 
 process.chdir(PROJECT_ROOT);
-const fs = require('fs');
-const lockJson = JSON.parse(fs.readFileSync('package-lock.json'));
-const result = tree.unrollDepthFirst(lockJson, {
-  reject: ['integrity', 'version', 'resolved', 'bundled'],
-  fail: [item => item.dev || item.optional]
-});
-console.log(result.length)
+function processPackageLock(where) {
+  const fs = require('fs');
+  const lockJson = JSON.parse(fs.readFileSync('package-lock.json'));
+  const result = tree.unrollDepthFirst(lockJson, {
+    reject: {
+      integrity: true,
+      version: true,
+      resolved: true,
+      bundled: true
+    },
+    fail: [item => item.dev || item.optional]
+  });
+  const filtered = result.filter(str => str !== 'requires').filter(str => str !== 'dependencies');
+  console.log(result.length, filtered, filtered.length);
 
-// console.log(
-//   result
-//     .join(',')
-//     .split(/(requires)/)
-//     .map(str => str.split(/(dependencies)/))
-// );
+  // const ordred = [...Object.entries(result)];
+  // ordred.sort(([v, x], [u, y]) => y - x);
+  // console.log(ordred);
+}
+processPackageLock('.');
+
 // console.log(lockJson)
 // const root = {};
 // for (const f of fileUtils.walkFileTree('.', root)) {
