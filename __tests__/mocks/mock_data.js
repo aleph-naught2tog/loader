@@ -113,3 +113,7 @@ const totalFauxDependencyTree = {
     }
   }
 };
+
+module.exports = {
+  simpleFauxDependencyTree: simpleFauxDependencyTree
+}

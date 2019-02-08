@@ -1,30 +1,14 @@
 const path = require('path');
 const fileUtils = require('./file_utils');
+const { processPackageLock } = require('./processPackageLock');
 
 // this is the root of the *project being built*
 const PROJECT_ROOT = path.join(process.cwd(), 'demo_project');
 
-const tree = require('./tree');
-
 process.chdir(PROJECT_ROOT);
 
-function processPackageLock() {
-  const fs = require('fs');
-  const lockJson = JSON.parse(fs.readFileSync('package-lock.json'));
-  const result = tree.unrollDepthFirst(lockJson, {
-    reject: {
-      integrity: true,
-      resolved: true,
-      bundled: true
-    },
-    fail: [item => item.dev || item.optional]
-  });
-
-  return result;
-}
-
 const processedLockFile = processPackageLock();
-console.log(processedLockFile);
+console.log(processedLockFile.length);
 
 // const fs = require('fs');
 //   const lockJson = JSON.parse(fs.readFileSync('package-lock.json'));

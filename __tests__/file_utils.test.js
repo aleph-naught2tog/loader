@@ -1,5 +1,5 @@
+const { makeFolderIfNotExists } = require('../src/file_utils');
 describe('makeFileIfNotExists should be idempotentish', () => {
-  const { makeFolderIfNotExists } = require('../lib/file_utils');
   const fakeDirectory = {};
   const fakeFs = {
     mkdirSync: filename => {
@@ -30,7 +30,6 @@ describe('makeFileIfNotExists should be idempotentish', () => {
 });
 
 describe('makeFileIfNotExists should only fail for unknowns', () => {
-  const { makeFolderIfNotExists } = require('../lib/file_utils');
   const passFn = {
     mkdirSync: _filename => {
       return true;

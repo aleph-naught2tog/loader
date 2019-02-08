@@ -21,13 +21,18 @@
   which we can certainly filter out at the end but ehhhhh?
 */
 exports.unrollDepthFirst = unrollDepthFirst;
-function unrollDepthFirst(dict, { reject = {}, fail = [] }) {
+function unrollDepthFirst(dict, options = {}) {
+  // console.log('------');
+  let counter = 0;
+  const { reject = {}, fail = [], capture = {} } = options;
   const resultStack = [];
 
   // Initialize our stack by adding the object itself
   const stack = [dict];
 
   outermost_while_loop: while (stack.length) {
+    counter += 1;
+
     // 0 is falsy -- meaning, if we have gotten in here, there is at LEAST on
     //    object on the stack; as a result, we can safely pop and know that we
     //    receive *something*
@@ -60,8 +65,15 @@ function unrollDepthFirst(dict, { reject = {}, fail = [] }) {
     //    grabbing some indicator as to whether the leftChild of our currentTree
     //    has a rightSibling at all to visit.)
     const [leftChildKey, restObjectExists] = Object.keys(currentTree);
-    if (leftChildKey in reject) {
-      continue outermost_while_loop; // <- label
+    if (leftChildKey) {
+      if (leftChildKey in reject) {
+        // We need to still process things -- but no need to add this key.
+      } else {
+        resultStack.unshift(leftChildKey);
+      }
+    } else {
+      // If there's no leftChildKey, then the object is empty; we can keep on
+      continue outermost_while_loop;
     }
 
     // Since the tree is an object, however, we can't just pop things off and
@@ -70,10 +82,9 @@ function unrollDepthFirst(dict, { reject = {}, fail = [] }) {
     //    thing, etc, which means more tracking/timing of things)
 
     // As the name implies, the `delete` operator destroys that reference on the
-    //    object, which means that since we *want* the child under that key (if
-    //    it's there at all, but since you can delete things that aren't there
-    //    with no issue we don't need to check first), we need to store it into
-    //    a variable before doing so or we'll lose anything there.
+    //    object, which means that since we *want* the child under that key --
+    //    we need to store it into a variable before doing so or we'll lose
+    //    anything there.
     const leftChild = currentTree[leftChildKey];
 
     // Here, we delete that reference; if we look at the object now, there will
@@ -90,11 +101,6 @@ function unrollDepthFirst(dict, { reject = {}, fail = [] }) {
       //    we want to ignore; by doing so here, we can prevent adding them to
       //    the stack at all
       for (const key in reject) {
-        // TODO: so, um, if I *remove* this `for` loop, but leave in the
-        //    condition to continue on (above) without adding when a 'reject'
-        //    key is found, we ... lose the whole tree I guess. which is not
-        //    great? or might not b a problem but not happy that I don't
-        //    understant *why* that happens
         delete leftChild[key];
         delete currentTree[key];
       }
@@ -104,16 +110,16 @@ function unrollDepthFirst(dict, { reject = {}, fail = [] }) {
       //    the next thing processed -- hence the "depth-first" nature
       stack[stack.length] = currentTree;
 
+      // TODO: We need to maybe preserve version information? Although, I
+      //    believe npm's own system solves that for us -- e.g., if something is
+      //    listed as a dependency, we *have* to have that version.
+
       // Similarly, since 'moreObjectToCheck' was the key AFTER, we *know*
       //    that leftChild exists; therefore, we can skip the branch below
       //    and add it here for certain, `continue`ing to progress early
       typeof leftChild === 'object' && (stack[stack.length] = leftChild);
 
-      // Finally, we add that key -- leftChildKey -- to the *start* of our
-      //    resultStack, which ensures it is placed *before* its parents
-      //    meaning it will 'load' first.
-      // if we were a generator, we'd `yield` the key here to emit it
-      resultStack.unshift(leftChildKey);
+      // and we continue on!
       continue outermost_while_loop; // <-- label
     }
 
@@ -121,13 +127,13 @@ function unrollDepthFirst(dict, { reject = {}, fail = [] }) {
     //    Honestly this has some sort of implication/meaning I think, but
     //    I'm not sure what. They're like the... extrema? or something
     if (leftChild) {
-      // No need to add the rest of the tree -- we know it's finished
+      // No need to add the rest of this current tree -- we know it's finished
       stack[stack.length] = leftChild;
-
-      // And as above in the other branch, we go ahead and add that key
-      resultStack.unshift(leftChildKey);
+    } else {
+      throw new Error('No left child -- this should never happen.');
     }
   }
 
+  // console.log(counter);
   return resultStack;
 }
