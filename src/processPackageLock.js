@@ -18,3 +18,26 @@ function processPackageLock() {
 
   return result;
 }
+
+const x = {
+  beige: { // no -- 'apples' comes after
+    random: { // yes -- only
+      pale: 'moon', // no -- 'adjective' comes after
+      adjective: 'out of ideas', // yes -- last key
+    }
+  },
+  apples: { // yes -- last key
+    pears: {}, // no -- 'sweet', 'ducks' come after
+    sweet: { // no -- 'ducks' comes after
+      otherKey: 99, // no -- 'flowers' comes after
+      flowers: { // yes -- last key
+        smoky: 'blue' // yes -- only key
+      }
+    },
+    ducks: { // yes -- last key
+      beep: 'bop', // no -- 'bing', 'pop' come after
+      bing: 'zip', // no -- 'bing' comes after
+      pop: 'whee' // yes -- 'pop'
+    }
+  }
+};

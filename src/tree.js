@@ -22,6 +22,7 @@
 */
 exports.unrollDepthFirst = unrollDepthFirst;
 function unrollDepthFirst(dict, options = {}) {
+  let values = [];
   // console.log('------');
   let counter = 0;
   const {
@@ -91,7 +92,7 @@ function unrollDepthFirst(dict, options = {}) {
       // or it wasn't descendable, so moot point
       // either way I thiiiiiiink we can conclude that the most recent leftChildKey is always the key that got us and is our "entry"
       const keyMostRecentlyEmitted = resultStack[0];
-      console.log(resultStack);
+
       // do NOT add the key *itself* to the stack
       shouldEmitLeftChildKey = false;
       // get the VALUE at that key
@@ -100,8 +101,6 @@ function unrollDepthFirst(dict, options = {}) {
       // this should be always stringable, because we're gonna concat it on
       // in place. I guess?
       resultStack[0] = `${keyMostRecentlyEmitted}=${currentValue}`;
-
-      // e.g., associate the version # with the parent key
     }
 
     if (leftChildKey in descendAndSkipKeyEmit) {
@@ -181,13 +180,14 @@ function unrollDepthFirst(dict, options = {}) {
     //    Honestly this has some sort of implication/meaning I think, but
     //    I'm not sure what. They're like the... extrema? or something
     if (leftChild) {
+      values.unshift(leftChildKey);
       // No need to add the rest of this current tree -- we know it's finished
       stack[stack.length] = leftChild;
     } else {
       throw new Error('No left child -- this should never happen.');
     }
   }
-
+  // console.log(values);
   // console.log(counter);
   return resultStack;
 }

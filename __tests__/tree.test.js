@@ -99,7 +99,7 @@ describe('unrolling', () => {
         ducks: {
           beep: 'bop'
         },
-        oranges: 12,
+        oranges: 12
       }
     };
     const result = unrollDepthFirst(small, {
@@ -124,7 +124,7 @@ describe('unrolling', () => {
         ducks: {
           beep: 'bop'
         },
-        oranges: 12,
+        oranges: 12
       }
     };
     const result = unrollDepthFirst(small, {
@@ -181,13 +181,15 @@ describe('unrolling', () => {
       },
       capture: {
         version: true
-      },
+      }
     });
 
     expect(result).toHaveLength(7);
     expect(result).toContain('version=blue');
   });
+});
 
+describe('key emission', () => {
   it('should emit the value up a level to the parent entry key...uh', () => {
     const small = {
       apples: {
@@ -205,7 +207,7 @@ describe('unrolling', () => {
 
     const result = unrollDepthFirst(small, {
       emitUpOneAndSkip: {
-        'version': true
+        version: true
       }
     });
 
@@ -216,6 +218,39 @@ describe('unrolling', () => {
     expect(result[3]).toBe('dependencies');
     expect(result[4]).toBe('pears');
     expect(result[5]).toBe('apples');
+    expect(result[2]).toBe('flowers=blue');
+  });
+
+  it('should emit the value blah blah even if not the first key', () => {
+    const small = {
+      apples: {
+        pears: {},
+        dependencies: {
+          hedgehogs: 99,
+          flowers: {
+            version: 'blue'
+          }
+        },
+        ducks: {
+          beep: 'bop'
+        }
+      }
+    };
+
+    const result = unrollDepthFirst(small, {
+      emitUpOneAndSkip: {
+        version: true
+      }
+    });
+
+    expect(result).toHaveLength(7);
+    expect(result).not.toContain('version');
+    expect(result[0]).toBe('beep');
+    expect(result[1]).toBe('ducks');
+    expect(result[3]).toBe('hedgehogs');
+    expect(result[4]).toBe('dependencies');
+    expect(result[5]).toBe('pears');
+    expect(result[6]).toBe('apples');
     expect(result[2]).toBe('flowers=blue');
   });
 });
