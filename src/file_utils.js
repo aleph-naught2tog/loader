@@ -23,12 +23,9 @@ const grabDependencies = folder => {
 
 exports.walkFileTree = buildDependencyTree;
 function *buildDependencyTree(startingFolder = '.', dependencyTree = {}) {
-  const cwd = process.cwd();
-  const nodeModulesPath = path.join(cwd, 'node_modules');
+  const nodeModulesPath = cwdTo('node_modules');
 
-  // console.group(path.basename(startingFolder));
   const dependencies = grabDependencies(startingFolder);
-  // console.log(dependencies);
 
   for (const dependencyName of dependencies) {
     const newRoot = {}; // root note for this dep
@@ -37,9 +34,6 @@ function *buildDependencyTree(startingFolder = '.', dependencyTree = {}) {
     dependencyTree[dependencyName] = newRoot;
   }
 
-  // console.groupEnd();
-
-  // return dependencyTree;
   yield dependencyTree;
 }
 

@@ -4,11 +4,28 @@ const fileUtils = require('./file_utils');
 // this is the root of the *project being built*
 const PROJECT_ROOT = path.join(process.cwd(), 'demo_project');
 
-const root = {};
+const tree = require('./tree');
+
 process.chdir(PROJECT_ROOT);
-for (const f of fileUtils.walkFileTree('.', root)) {
-  console.log(f);
-}
+const fs = require('fs');
+const lockJson = JSON.parse(fs.readFileSync('package-lock.json'));
+const result = tree.unrollDepthFirst(lockJson, {
+  reject: ['integrity', 'version', 'resolved', 'bundled'],
+  fail: [item => item.dev || item.optional]
+});
+console.log(result.length)
+
+// console.log(
+//   result
+//     .join(',')
+//     .split(/(requires)/)
+//     .map(str => str.split(/(dependencies)/))
+// );
+// console.log(lockJson)
+// const root = {};
+// for (const f of fileUtils.walkFileTree('.', root)) {
+//   // console.log(f);
+// }
 // console.log(root);
 
 // const {
@@ -17,7 +34,6 @@ for (const f of fileUtils.walkFileTree('.', root)) {
 //   copyAllDependenciesToVendorFolder,
 //   copyAllAssetsToVendorFolder
 // } = require('./getAllDependencyData');
-
 
 // const PUBLIC_FOLDER = path.join(PROJECT_ROOT, 'public');
 // const SOURCE_FOLDER = path.join(PROJECT_ROOT, 'src');
