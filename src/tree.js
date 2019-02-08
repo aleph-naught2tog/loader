@@ -24,7 +24,14 @@ exports.unrollDepthFirst = unrollDepthFirst;
 function unrollDepthFirst(dict, options = {}) {
   // console.log('------');
   let counter = 0;
-  const { reject = {}, fail = [], capture = {} } = options;
+  const {
+    reject = {},
+    fail = [],
+    capture = {},
+    emitUpOneAndSkip = {},
+    descendAndSkipKeyEmit = {}
+  } = options;
+
   const resultStack = [];
 
   // Initialize our stack by adding the object itself
@@ -65,15 +72,62 @@ function unrollDepthFirst(dict, options = {}) {
     //    grabbing some indicator as to whether the leftChild of our currentTree
     //    has a rightSibling at all to visit.)
     const [leftChildKey, restObjectExists] = Object.keys(currentTree);
-    if (leftChildKey) {
-      if (leftChildKey in reject) {
-        // We need to still process things -- but no need to add this key.
-      } else {
-        resultStack.unshift(leftChildKey);
-      }
-    } else {
+    let shouldEmitLeftChildKey = true;
+    if (!leftChildKey) {
       // If there's no leftChildKey, then the object is empty; we can keep on
       continue outermost_while_loop;
+    }
+
+    if (leftChildKey in emitUpOneAndSkip) {
+      // Remember we're unshifting keys (adding them at 0)
+      // so the key at 0 is what we last saw -- which means it was the previous
+      // left child key, and since we are descending depth-first
+      // we know we are a child of it -- e.g., currentTree is the child that was
+      // the leftChild last iteration through
+      // ...unless this depends on WHERE we are as a key
+      // if we are the first key; awesome
+      // if there was something before us
+      // either it was descendable; in which case it has done so already
+      // or it wasn't descendable, so moot point
+      // either way I thiiiiiiink we can conclude that the most recent leftChildKey is always the key that got us and is our "entry"
+      const keyMostRecentlyEmitted = resultStack[0];
+      console.log(resultStack);
+      // do NOT add the key *itself* to the stack
+      shouldEmitLeftChildKey = false;
+      // get the VALUE at that key
+      const currentValue = currentTree[leftChildKey];
+      console.assert(currentValue);
+      // this should be always stringable, because we're gonna concat it on
+      // in place. I guess?
+      resultStack[0] = `${keyMostRecentlyEmitted}=${currentValue}`;
+
+      // e.g., associate the version # with the parent key
+    }
+
+    if (leftChildKey in descendAndSkipKeyEmit) {
+      // do NOT emit that key
+      // but go ahead and do everything else normally
+      // e.g., walk the dependency object but don't add 'dependencies'
+      shouldEmitLeftChildKey = false;
+    }
+
+    if (leftChildKey in reject) {
+      // We need to still process things
+      //    but no need to add this key.
+      shouldEmitLeftChildKey = false;
+    }
+
+    if (leftChildKey in capture) {
+      console.assert(currentTree[leftChildKey]);
+
+      // I don't like this.
+      // because we are emitting a different one here
+      shouldEmitLeftChildKey = false;
+      resultStack.unshift(`${leftChildKey}=${currentTree[leftChildKey]}`);
+    }
+
+    if (shouldEmitLeftChildKey) {
+      resultStack.unshift(leftChildKey);
     }
 
     // Since the tree is an object, however, we can't just pop things off and
