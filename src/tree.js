@@ -92,7 +92,7 @@ function unrollDepthFirst(dict, options = {}) {
       // get the VALUE at that key
       const currentValue = currentTree[leftChildKey];
       console.assert(currentValue);
-      resultStack[0] = `${keyMostRecentlyEmitted}=${currentValue}`;
+      resultStack[0] = `<- ${keyMostRecentlyEmitted}=${currentValue}`;
     }
 
     if (leftChildKey in descendAndSkipKeyEmit) {
@@ -100,21 +100,13 @@ function unrollDepthFirst(dict, options = {}) {
       // but go ahead and do everything else normally
       // e.g., walk the dependency object but don't add 'dependencies'
       shouldEmitLeftChildKey = false;
+      resultStack[0] = `>> ${resultStack[0]}`;
     }
 
     if (leftChildKey in reject) {
       // We need to still process things
       //    but no need to add this key.
       shouldEmitLeftChildKey = false;
-    }
-
-    if (leftChildKey in capture) {
-      console.assert(currentTree[leftChildKey]);
-
-      // I don't like this.
-      // because we are emitting a different one here
-      shouldEmitLeftChildKey = false;
-      resultStack.unshift(`${leftChildKey}=${currentTree[leftChildKey]}`);
     }
 
     if (shouldEmitLeftChildKey) {

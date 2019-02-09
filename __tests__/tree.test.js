@@ -159,34 +159,6 @@ describe('unrolling', () => {
     expect(result[2]).toBe('pears');
     expect(result[3]).toBe('apples');
   });
-
-  it('should associates captures values with their keys', () => {
-    const small = {
-      apples: {
-        pears: {},
-        dependencies: {
-          flowers: {
-            version: 'blue'
-          }
-        },
-        ducks: {
-          beep: 'bop'
-        }
-      }
-    };
-
-    const result = unrollDepthFirst(small, {
-      reject: {
-        oranges: true
-      },
-      capture: {
-        version: true
-      }
-    });
-
-    expect(result).toHaveLength(7);
-    expect(result).toContain('version=blue');
-  });
 });
 
 describe('key emission', () => {
