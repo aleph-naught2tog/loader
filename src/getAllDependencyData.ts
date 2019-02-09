@@ -1,14 +1,14 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const fileUtils = require('./file_utils');
+import * as fileUtils from './file_utils';
+
 const { cwdTo } = fileUtils;
 
 const MAIN_LOOKUP = {};
 const ASSET_LOOKUP = {};
 
-exports.getAllDependencyData = getAllDependencyData;
-function getAllDependencyData(projectRoot) {
+export function getAllDependencyData(projectRoot) {
   process.chdir(projectRoot);
   ensureNodeModules();
   const { dependencies } = getRootDependencies();
@@ -105,8 +105,7 @@ function parsePackageJson(moduleName) {
   return JSON.parse(fileUtils.readFile(packageJsonPath));
 }
 
-exports.copyAllDependenciesToVendorFolder = copyAllDependenciesToVendorFolder;
-function copyAllDependenciesToVendorFolder(vendorFolder) {
+export function copyAllDependenciesToVendorFolder(vendorFolder) {
   const mainIndex = MAIN_LOOKUP;
 
   for (const dependencyName in mainIndex) {
@@ -125,8 +124,7 @@ function recursivelyCopyDependencies(dependencyFileListing, vendorOutFolder) {
   }
 }
 
-exports.copyAllAssetsToVendorFolder = copyAllAssetsToVendorFolder;
-function copyAllAssetsToVendorFolder(vendorFolder) {
+export function copyAllAssetsToVendorFolder(vendorFolder) {
   const assetIndex = ASSET_LOOKUP;
   for (const folderNameAsKey in assetIndex) {
     const assetFileList = assetIndex[folderNameAsKey];
@@ -155,8 +153,7 @@ function copyOverAssets(assetFolder, assetFileList) {
 
 const NEW_LINES_REGEX = /(\r?\n)/g;
 
-exports.processData = processData;
-function processData(inputFileData) {
+export function processData(inputFileData) {
   const lines = inputFileData.split(NEW_LINES_REGEX);
   const returnLines = [];
 
@@ -171,8 +168,7 @@ const IMPORT_REGEX = /^import(.+?)from(.+?);?$/;
 const MAP_AS_TO_CONST_REGEX = /\*\s+as\s+(\w+)/;
 const ALIASES_TO_CONST_REGEX = /(\w+)\s+as\s+(\w+)/;
 
-exports.getImportData = getImportData;
-function getImportData(importStatement) {
+export function getImportData(importStatement) {
   const matches = IMPORT_REGEX.exec(importStatement);
 
   if (matches) {
@@ -188,8 +184,7 @@ function getImportData(importStatement) {
   }
 }
 
-exports.requireVersionOfImport = requireVersionOfImport;
-function requireVersionOfImport({ packageName: unmappedPackage, path }) {
+export function requireVersionOfImport({ packageName: unmappedPackage, path }) {
   const packageName = unmappedPackage
     .replace(MAP_AS_TO_CONST_REGEX, '$1')
     .replace(ALIASES_TO_CONST_REGEX, '$1: $2')

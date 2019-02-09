@@ -14,15 +14,21 @@
   all-the-way-out, but using the label consistently makes it more clear what's
   happening.
 */
-exports.unrollDepthFirst = unrollDepthFirst;
-function unrollDepthFirst(dict, options = {}) {
+
+export type optionType = {
+  emitUpOneAndSkip?: { version: boolean };
+  reject?: { integrity: boolean; resolved: boolean; bundled: boolean };
+  descendAndSkipKeyEmit?: { dependencies: boolean };
+  fail?: ((item: any) => any)[];
+};
+
+export function unrollDepthFirst(dict, options: optionType) {
   let values = [];
   // console.log('------');
   let counter = 0;
   const {
     reject = {},
     fail = [],
-    capture = {},
     emitUpOneAndSkip = {},
     descendAndSkipKeyEmit = {}
   } = options;
@@ -92,7 +98,7 @@ function unrollDepthFirst(dict, options = {}) {
       // get the VALUE at that key
       const currentValue = currentTree[leftChildKey];
       console.assert(currentValue);
-      resultStack[0] = `<- ${keyMostRecentlyEmitted}=${currentValue}`;
+      resultStack[0] = `${keyMostRecentlyEmitted}=${currentValue}`;
     }
 
     if (leftChildKey in descendAndSkipKeyEmit) {
@@ -100,7 +106,7 @@ function unrollDepthFirst(dict, options = {}) {
       // but go ahead and do everything else normally
       // e.g., walk the dependency object but don't add 'dependencies'
       shouldEmitLeftChildKey = false;
-      resultStack[0] = `>> ${resultStack[0]}`;
+      resultStack[0] = `${resultStack[0]}`;
     }
 
     if (leftChildKey in reject) {

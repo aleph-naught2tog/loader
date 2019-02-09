@@ -1,6 +1,5 @@
 const { Scope } = require('./scope');
 
-
 function moduleWithDependencies() {
   // commonlyRequiredModule
   // topLevelWrongVersionModule

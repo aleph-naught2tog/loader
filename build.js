@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require('./src/build');
+require('./dist/build');
