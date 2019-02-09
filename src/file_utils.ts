@@ -78,7 +78,6 @@ export function copyOverFiles(
 function handleFolder(startingFolder, destinationFolder, postReadProcessing) {
   const options: { withFileTypes: true } = { withFileTypes: true };
   const files = fs.readdirSync(startingFolder, options);
-  console.log(files);
   const filteredFiles = files.filter(file => /^[^\.]/.test(file.name));
 
   for (const file of filteredFiles) {

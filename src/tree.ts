@@ -1,3 +1,11 @@
+interface Json {
+  [key: string]: string | number | boolean | Json | Array<Json>;
+}
+
+interface TreeJson {
+  [key: string]: string | number | boolean | TreeJson;
+}
+
 /*
   ❗️❗️❗️Fair warning: ❗️❗️❗️
 
@@ -16,39 +24,38 @@
 */
 
 export type optionType = {
-  emitUpOneAndSkip?: { version: boolean };
-  reject?: { integrity: boolean; resolved: boolean; bundled: boolean };
-  descendAndSkipKeyEmit?: { dependencies: boolean };
+  emitUpOneAndSkip?: { [key: string]: boolean };
+  reject?: { [key: string]: boolean };
+  descendAndSkipKeyEmit?: { [key: string]: boolean };
   fail?: ((item: any) => any)[];
 };
 
-export function unrollDepthFirst(dict, options: optionType) {
-  let values = [];
-  // console.log('------');
-  let counter = 0;
+export function unrollDepthFirst(dict: TreeJson, options: optionType = {}) {
   const {
     reject = {},
     fail = [],
     emitUpOneAndSkip = {},
     descendAndSkipKeyEmit = {}
   } = options;
-
-  const resultStack = [];
-
-  // Initialize our stack by adding the object itself
-  const stack = [dict];
+  let counter = 0;
+  const resultStack: string[] = [];
+  const stack: TreeJson[] = [dict];
 
   outermost_while_loop: while (stack.length) {
     counter += 1;
 
-    // 0 is falsy -- meaning, if we have gotten in here, there is at LEAST on
-    //    object on the stack; as a result, we can safely pop and know that we
-    //    receive *something*
-    const currentTree = stack.pop();
+    /*
+      We can do the not null assertion, because `while (stack.length)` will only
+      be true if stack.length is not 0; that is, there has to be SOMETHING
+      inside it.
 
-    if (typeof currentTree !== 'object') {
-      continue outermost_while_loop; // <-- label
-    }
+      We know what's inside isn't null or undefined, because either:
+        1. We just started, in which case the object is what we just put in
+           above in the declaration
+        2. The object is the `firstChild` from our last iteration -- which we
+           assert exists before we add it to the stack
+    */
+    const currentTree = stack.pop()!;
 
     for (const shouldFail of fail) {
       if (shouldFail(currentTree)) {
@@ -56,67 +63,49 @@ export function unrollDepthFirst(dict, options: optionType) {
         //    outermost (while) loop; otherwise, we would keep checking failure
         //    conditions or if we `break`, we would end up still adding the
         //    failing tree
-        continue outermost_while_loop; // <-- label
+        continue outermost_while_loop;
       }
     }
 
-    // leftChildKey is the first key; if there is one, our leftChild is there.
-    //    We don't need to worry about the key order; objects are unordered
-    //    anyways, and in our case, dependencies are processed alphabetically
-    //    *at a given level*.
+    const treeKeys = Object.keys(currentTree);
 
-    // The next destructures the second key from the array. If there isn't one
-    //    -- say, we had const [one, two] = ['apples']; we'd get: one ->
-    //    'apples', two => undefined
-
-    // (If you're familiar with left-child-right-sibling, this is where we are
-    //    grabbing some indicator as to whether the leftChild of our currentTree
-    //    has a rightSibling at all to visit.)
-    const [leftChildKey, restObjectExists] = Object.keys(currentTree);
-    let shouldEmitLeftChildKey = true;
-    if (!leftChildKey) {
-      // If there's no leftChildKey, then the object is empty; we can keep on
+    if (treeKeys.length === 0) {
       continue outermost_while_loop;
     }
 
-    if (leftChildKey in emitUpOneAndSkip) {
-      // Remember we're unshifting keys (adding them at 0)
-      // so the key at 0 is what we last saw -- which means it was the previous
-      // left child key, and since we are descending depth-first
-      // we know we are a child of it -- e.g., currentTree is the child that was
-      // the leftChild last iteration through
-      // ...unless this depends on WHERE we are as a key
-      // if we are the first key; awesome
-      // if there was something before us
-      // either it was descendable; in which case it has done so already
-      // or it wasn't descendable, so moot point
-      // either way I thiiiiiiink we can conclude that the most recent leftChildKey is always the key that got us and is our "entry"
-      const keyMostRecentlyEmitted = resultStack[0];
+    const firstKey = treeKeys[0];
+
+    let shouldEmitKey = true;
+    if (firstKey in emitUpOneAndSkip) {
+      /*
+        Remember we're unshifting keys (adding them at 0) -- so the key at 0 is
+        what we last saw -- which means it was the previous left child key, and
+        since we are descending depth-first we know we are a child of it --
+        e.g., currentTree is the child that was the firstChild last iteration
+        through
+      */
 
       // do NOT add the key *itself* to the stack
-      shouldEmitLeftChildKey = false;
+      shouldEmitKey = false;
       // get the VALUE at that key
-      const currentValue = currentTree[leftChildKey];
-      console.assert(currentValue);
-      resultStack[0] = `${keyMostRecentlyEmitted}=${currentValue}`;
+      const currentValue = currentTree[firstKey];
+      resultStack[0] += `=${currentValue}`;
     }
 
-    if (leftChildKey in descendAndSkipKeyEmit) {
-      // do NOT emit that key
-      // but go ahead and do everything else normally
+    // TODO: this and the reject branch look identical but aren't, because we are using the 'reject' keys later to delete off the tree before processing it further. That's totally unclear from here.
+    if (firstKey in descendAndSkipKeyEmit) {
       // e.g., walk the dependency object but don't add 'dependencies'
-      shouldEmitLeftChildKey = false;
-      resultStack[0] = `${resultStack[0]}`;
+      shouldEmitKey = false;
     }
 
-    if (leftChildKey in reject) {
+    if (firstKey in reject) {
       // We need to still process things
       //    but no need to add this key.
-      shouldEmitLeftChildKey = false;
+      shouldEmitKey = false;
     }
 
-    if (shouldEmitLeftChildKey) {
-      resultStack.unshift(leftChildKey);
+    if (shouldEmitKey) {
+      resultStack.unshift(firstKey);
     }
 
     // Since the tree is an object, however, we can't just pop things off and
@@ -128,49 +117,46 @@ export function unrollDepthFirst(dict, options: optionType) {
     //    object, which means that since we *want* the child under that key --
     //    we need to store it into a variable before doing so or we'll lose
     //    anything there.
-    const leftChild = currentTree[leftChildKey];
+    const firstChild = currentTree[firstKey];
 
     // Here, we delete that reference; if we look at the object now, there will
-    //    be *no* leftChildKey to be found, and thus certainly nothing stored
+    //    be *no* firstChildKey to be found, and thus certainly nothing stored
     //    under that key on the object.
-    delete currentTree[leftChildKey];
+    delete currentTree[firstKey];
 
-    // Remember, this key we grabbed above *only* exists if there were keys
-    //    other than the one we just deleted -- meaning we can use its existence
-    //    as the measure of whether or not the rest of the tree is worth
-    //    investigating
-    if (restObjectExists) {
-      // Remove unnecessary branches by removing the references under the keys
-      //    we want to ignore; by doing so here, we can prevent adding them to
-      //    the stack at all
+    /*
+      If we had more than one key, there is more object to process still
+    */
+    if (treeKeys.length > 1) {
+      /*
+        Remove unnecessary branches by removing the references under the keys we
+        want to ignore off the whole currentTree -- which means they will never
+        be processed, as they won't be present when added to the stack
+      */
       for (const key in reject) {
-        delete leftChild[key];
         delete currentTree[key];
       }
 
-      // We add it to the stack *before* the leftChild;
-      //    as a result, the leftChild will be on top of the stack, and thus
+      // We add it to the stack *before* the firstChild;
+      //    as a result, the firstChild will be on top of the stack, and thus
       //    the next thing processed -- hence the "depth-first" nature
       stack[stack.length] = currentTree;
-
-      // Similarly, since 'moreObjectToCheck' was the key AFTER, we *know*
-      //    that leftChild exists; therefore, we can skip the branch below
-      //    and add it here for certain, `continue`ing to progress early
-      typeof leftChild === 'object' && (stack[stack.length] = leftChild);
-
-      // and we continue on!
-      continue outermost_while_loop; // <-- label
     }
 
-    if (leftChild) {
-      values.unshift(leftChildKey);
-      // No need to add the rest of this current tree -- we know it's finished
-      stack[stack.length] = leftChild;
+    if (firstChild) {
+      // don't want to add null -- and typeof null === 'object'
+      if (typeof firstChild === 'object') {
+        for (const key in reject) {
+          delete firstChild[key];
+        }
+
+        stack[stack.length] = firstChild;
+      }
     } else {
       throw new Error('No left child -- this should never happen.');
     }
   }
-  // console.log(values);
+
   // console.log(counter);
   return resultStack;
 }
