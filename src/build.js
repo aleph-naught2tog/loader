@@ -7,8 +7,23 @@ const PROJECT_ROOT = path.join(process.cwd(), 'demo_project');
 
 process.chdir(PROJECT_ROOT);
 
-const processedLockFile = processPackageLock();
-console.log(processedLockFile.length);
+const processedLockFile = processPackageLock({
+  emitUpOneAndSkip: {
+    version: true
+  },
+  reject: {
+    // the "true" here is just a placeholder; what we really want are the keys
+    integrity: true,
+    resolved: true,
+    bundled: true
+  },
+  descendAndSkipKeyEmit: {
+    dependencies: true,
+    // requires: true
+  },
+  fail: [item => item.dev],
+});
+console.log(processedLockFile);
 
 // const fs = require('fs');
 //   const lockJson = JSON.parse(fs.readFileSync('package-lock.json'));

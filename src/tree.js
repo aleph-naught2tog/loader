@@ -13,12 +13,6 @@
   it's only really necessary on the nested `for` loop where we want to jump
   all-the-way-out, but using the label consistently makes it more clear what's
   happening.
-
-  TODO: this should deduplicate as we go? (I have an Idea about how to do so
-  rapidly and while preserving order I am just not confident yet...)
-
-  TODO: we are currently adding 'requires' and 'dependencies' a million times
-  which we can certainly filter out at the end but ehhhhh?
 */
 exports.unrollDepthFirst = unrollDepthFirst;
 function unrollDepthFirst(dict, options = {}) {
@@ -98,8 +92,6 @@ function unrollDepthFirst(dict, options = {}) {
       // get the VALUE at that key
       const currentValue = currentTree[leftChildKey];
       console.assert(currentValue);
-      // this should be always stringable, because we're gonna concat it on
-      // in place. I guess?
       resultStack[0] = `${keyMostRecentlyEmitted}=${currentValue}`;
     }
 
@@ -163,10 +155,6 @@ function unrollDepthFirst(dict, options = {}) {
       //    the next thing processed -- hence the "depth-first" nature
       stack[stack.length] = currentTree;
 
-      // TODO: We need to maybe preserve version information? Although, I
-      //    believe npm's own system solves that for us -- e.g., if something is
-      //    listed as a dependency, we *have* to have that version.
-
       // Similarly, since 'moreObjectToCheck' was the key AFTER, we *know*
       //    that leftChild exists; therefore, we can skip the branch below
       //    and add it here for certain, `continue`ing to progress early
@@ -176,9 +164,6 @@ function unrollDepthFirst(dict, options = {}) {
       continue outermost_while_loop; // <-- label
     }
 
-    // This last condition is the case of our very last key on an object
-    //    Honestly this has some sort of implication/meaning I think, but
-    //    I'm not sure what. They're like the... extrema? or something
     if (leftChild) {
       values.unshift(leftChildKey);
       // No need to add the rest of this current tree -- we know it's finished
