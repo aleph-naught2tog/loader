@@ -1,7 +1,7 @@
 const {
   getImportData,
   requireVersionOfImport
-} = require('../lib/getAllDependencyData');
+} = require('../src/getAllDependencyData');
 
 const importStruct = (name, path) => ({
   packageName: name,

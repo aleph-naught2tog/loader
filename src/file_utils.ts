@@ -1,8 +1,7 @@
-const path = require('path');
-const fs = require('fs');
+import path from 'path';
+import fs from 'fs';
 
-exports.cwdTo = cwdTo;
-function cwdTo(somePath) {
+export function cwdTo(somePath: string) {
   return path.join(process.cwd(), somePath);
 }
 
@@ -21,25 +20,29 @@ const grabDependencies = folder => {
   }
 };
 
-exports.walkFileTree = buildDependencyTree;
-function buildDependencyTree(startingFolder = '.', dependencyTree = {}) {
-  const cwd = process.cwd();
-  const nodeModulesPath = path.join(cwd, 'node_modules');
+export function* walkFileTree(
+  startingFolder = '.',
+  dependencyTree = {}
+) {
+  const nodeModulesPath = cwdTo('node_modules');
 
   const dependencies = grabDependencies(startingFolder);
 
   for (const dependencyName of dependencies) {
     const newRoot = {}; // root note for this dep
     const dependencyFolder = path.join(nodeModulesPath, dependencyName);
-    buildDependencyTree(dependencyFolder, newRoot);
+    yield* walkFileTree(dependencyFolder, newRoot);
     dependencyTree[dependencyName] = newRoot;
   }
 
-  return dependencyTree;
+  yield dependencyTree;
 }
 
-exports.copyOverFiles = copyOverFiles;
-function copyOverFiles(startingFolder, destinationFolder, postReadProcessing) {
+export function copyOverFiles(
+  startingFolder: string,
+  destinationFolder: string,
+  postReadProcessing?: (input: string) => string
+) {
   let isFolder = true;
   let startingPath = startingFolder;
   let destinationPath = destinationFolder;
@@ -73,9 +76,9 @@ function copyOverFiles(startingFolder, destinationFolder, postReadProcessing) {
 }
 
 function handleFolder(startingFolder, destinationFolder, postReadProcessing) {
-  const options = { withFileTypes: true, encoding: 'utf8' };
+  const options: { withFileTypes: true } = { withFileTypes: true };
   const files = fs.readdirSync(startingFolder, options);
-  const filteredFiles = files.filter(file => /^[^\.]/.test(file));
+  const filteredFiles = files.filter(file => /^[^\.]/.test(file.name));
 
   for (const file of filteredFiles) {
     const srcTarget = path.join(startingFolder, file.name);
@@ -90,7 +93,7 @@ function handleFolder(startingFolder, destinationFolder, postReadProcessing) {
   }
 }
 
-function handleFile(srcTarget, destTarget, postReadProcessing) {
+function handleFile(srcTarget, destTarget, postReadProcessing?) {
   const inputFileData = readFile(srcTarget);
   if (postReadProcessing) {
     writeFile(destTarget, postReadProcessing(inputFileData));
@@ -99,20 +102,17 @@ function handleFile(srcTarget, destTarget, postReadProcessing) {
   }
 }
 
-exports.readFile = readFile;
-function readFile(filename) {
+export function readFile(filename) {
   return fs.readFileSync(filename, { encoding: 'utf8' });
 }
 
-exports.writeFile = writeFile;
-function writeFile(filename, data) {
+export function writeFile(filename, data) {
   const folder = path.dirname(filename);
   makeFolderIfNotExists(folder, fs);
   fs.writeFileSync(filename, data, { flag: 'w+' });
 }
 
-exports.makeFolderIfNotExists = makeFolderIfNotExists;
-function makeFolderIfNotExists(folder, { mkdirSync }) {
+export function makeFolderIfNotExists(folder, { mkdirSync }) {
   try {
     mkdirSync(folder);
   } catch (error) {

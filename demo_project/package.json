@@ -9,7 +9,7 @@
     "request": "^2.88.0"
   },
   "devDependencies": {
-    "mrs-tiny-server": "file:../node_modules/mrs-tiny-server"
+    "mrs-tiny-server": "file:../../mrs-tiny-server"
   },
   "scripts": {
     "start": "mrs-tiny-server"
